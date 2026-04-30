@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/user.schema.json",
+  "title": "User",
+  "description": "User structure",
+  "type": "object",
+  "properties": {
+    "ID": {
+      "description": "The unique identifier for a user",
+      "type": "string",
+      "format": "uuid"
+    },
+    "name": {
+      "description": "user name",
+      "type": "string"
+    },
+    "email": {
+      "description": "user email",
+      "type": "string",
+      "format": "email"
+    },
+    "password": {
+      "description": "user password",
+      "type": "string"
+    },
+    "created_At": {
+      "description": "when user was created",
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [ "name", "email", "password" ],
+  "additionalProperties": false
+}
