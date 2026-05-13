@@ -20,7 +20,7 @@ type User struct {
 	Email     string    `json:"email" binding:"required,email" gorm:"not null;unique"`
 	Password  string    `json:"password" binding:"required" gorm:"not null"`
 	Name      string    `json:"name" binding:"required" gorm:"not null"`
-	Role      string    `json:"role" gorm:"default:USER"`
+	Role      string    `json:"role" gorm:"default:user"`
 	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
 }
 
@@ -160,7 +160,7 @@ func AuthMiddleware() gin.HandlerFunc {
 // Is Admin middleware
 func IsAdmin(c *gin.Context) bool {
 	role, exists := c.Get("role")
-	return exists && role == "ADMIN"
+	return exists && role == "admin"
 }
 
 // Error handling middleware
@@ -478,6 +478,9 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
+		// Generate UUID for contact
+		contact.ID = uuid.New().String()
 
 		// Get user ID from context
 		userID, exists := c.Get("user_id")

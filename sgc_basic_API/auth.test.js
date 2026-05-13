@@ -5,7 +5,7 @@ import {Client} from "pg"
 
 const BASE_URL = "http://localhost:8080"
 
-describe("Auth flow", () => {
+describe("Tests to verify authentication routes", () => {
   let user
   let refreshToken
   let accessToken
@@ -26,7 +26,7 @@ describe("Auth flow", () => {
     user = {
       name: `testuser_${Date.now()}`,
       email: `test${Date.now()}@gmail.com`,
-      password: "password123"
+      password: "Password123"
     }
 
     const registerRes = await axios.post(`${BASE_URL}/register`, user)
