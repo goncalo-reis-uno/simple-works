@@ -506,7 +506,7 @@ func main() {
 			return
 		}
 
-		var contact []Contact
+		var contacts []Contact
 
 		query := DB.Model(&Contact{})
 
@@ -534,12 +534,12 @@ func main() {
 
 		query = query.Order(sortBy + " " + order)
 
-		if err := query.Find(&contact).Error; err != nil {
+		if err := query.Find(&contacts).Error; err != nil {
 			c.Error(err)
 			return
 		}
 
-		c.JSON(http.StatusOK, contact)
+		c.JSON(http.StatusOK, contacts)
 	})
 
 	// Get contact by ID route
