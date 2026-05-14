@@ -683,7 +683,6 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"message": "contact deleted successfully"})
 	})
 
-	// Server start
 	if err := r.Run(":8080"); err != nil {
 		log.Fatalf("Failed to run server: %v", err)
 	}
