@@ -1,0 +1,72 @@
+name: API Tests
+
+on:
+  pull_request:
+    branches: [master]
+
+  push:
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres
+
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: sgc_basic_API
+
+        ports:
+          - 7777:5432
+
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Node
+        run: npm install
+
+      - name: Install Go
+        run: go mod download
+
+      - name: Start API
+        run: go run main.go &
+      
+      - name: Wait for API
+        run: sleep 10
+
+      - name: Create admin user
+        run: |
+            psql postgresql://postgres:admin@localhost:7777/sgc_basic_API -c "
+            INSERT INTO users (name, email, password, role)
+            VALUES (
+            'Admin',
+            'admin@example.com',
+            '$2a$14$2cg9o6uZK1BLvU7c5MGkuuO92OtbWw7eQvvVJSJzcp5TzT1Upe2T2',
+            'admin'
+            )
+            ON CONFLICT (email) DO NOTHING;
+            "
+
+      - name: Run tests
+        run: npm test
