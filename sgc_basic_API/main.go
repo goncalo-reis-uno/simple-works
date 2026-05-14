@@ -418,6 +418,60 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"message": "user deleted successfully"})
 	})
 
+	// Update any user credentials route (admin only)
+	r.PUT("/users/:id", AuthMiddleware(), func(c *gin.Context) {
+		if !IsAdmin(c) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "admin access required"})
+			return
+		}
+		// get user ID from URL
+		userID := c.Param("id")
+
+		var user User
+
+		// checks if the user exists in the database
+		if err := DB.First(&user, "id = ?", userID).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
+
+		// input should follow this structure for updating user credentials
+		var input struct {
+			Name     string `json:"name" binding:"required"`
+			Email    string `json:"email" binding:"required,email"`
+			Password string `json:"password" binding:"required"`
+		}
+
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		user.Name = input.Name
+		user.Email = input.Email
+
+		// update password if provided
+		if input.Password != "" {
+			if err := ValidatePassword(input.Password); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			hashedPassword, err := HashPassword(input.Password)
+			if err != nil {
+				c.Error(err)
+				return
+			}
+			user.Password = hashedPassword
+		}
+		// save updated user to the database
+		if err := DB.Save(&user).Error; err != nil {
+			c.Error(err)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "user updated successfully"})
+	})
+
 	// Update user credentials route (self)
 	r.PUT("/users/me", AuthMiddleware(), func(c *gin.Context) {
 		userID, _ := c.Get("user_id")
