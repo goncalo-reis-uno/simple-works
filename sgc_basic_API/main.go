@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"net/http"
 	"time"
 
@@ -42,11 +43,27 @@ type Contact struct {
 	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
 }
 
+// helper function to get environment variables with fallback
+func getEnv(key string, fallback string) string {
+	value := os.Getenv(key)
+
+	if value == "" {
+		return fallback
+	}
+	return value
+}
+
 // database connection
 var DB *gorm.DB
 
 func InitDB() {
-	dsn := "host=localhost user=postgres password=admin dbname=sgc_basic_API port=7777 sslmode=disable TimeZone=UTC"
+	host := getEnv("DB_HOST", "localhost")
+	user := getEnv("DB_USER", "postgres")
+	password := getEnv("DB_PASSWORD", "admin")
+	dbname := getEnv("DB_NAME", "sgc_basic_API")
+	port := getEnv("DB_PORT", "7777")
+
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC", host, user, password, dbname, port)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -59,7 +76,7 @@ func InitDB() {
 		log.Fatal("Migration failed:", err)
 	}
 
-	fmt.Printf("Database connection established on port %d\n", 7777)
+	fmt.Printf("Database connection established on port %s\n", port)
 }
 
 // Password hashing
