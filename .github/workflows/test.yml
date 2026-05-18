@@ -56,7 +56,7 @@ jobs:
         run: go run main.go &
       
       - name: Wait for API
-        run: sleep 10
+        run: sleep 15
 
       - name: Create admin user
         run: |
