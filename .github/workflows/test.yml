@@ -52,6 +52,9 @@ jobs:
       - name: Install Go
         run: go mod download
 
+      - name: Apply schema
+        run: psql postgresql://postgres:admin@localhost:7777/sgc_basic_API -f schema.sql
+
       - name: Start API
         run: go run main.go &
       
