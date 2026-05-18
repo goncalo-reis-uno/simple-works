@@ -225,7 +225,7 @@ describe("Tests to verify contact routes", () => {
         },
         { headers: { Authorization: userToken } }
       )
-      expect(true).toBe(false) // should not reach here
+      expect(true).toBe(false) // makes it fail on purpose
     } catch (e) {
       expect(e.response.status).toBe(404)
     }
