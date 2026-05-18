@@ -10,6 +10,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./sgc_basic_API
 
     services:
       postgres:
@@ -37,6 +40,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.24"
+          cache-dependency-path: sgc_basic_API/go.sum
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -49,24 +53,35 @@ jobs:
       - name: Install Go
         run: go mod download
 
+      - name: Apply schema
+        run: psql postgresql://postgres:admin@localhost:7777/sgc_basic_API -f schema.sql
+
+      - name: Build API
+        run: go build -o api .
+
       - name: Start API
-        run: go run main.go &
-      
+        run: ./api &
+
       - name: Wait for API
-        run: sleep 10
+        run: |
+          for i in $(seq 1 30); do
+            curl -s http://localhost:8080/ > /dev/null && echo "API is up" && break
+            echo "Waiting... attempt $i"
+            sleep 2
+          done
 
       - name: Create admin user
         run: |
-            psql postgresql://postgres:admin@localhost:7777/sgc_basic_API -c "
-            INSERT INTO users (name, email, password, role)
-            VALUES (
+          psql postgresql://postgres:admin@localhost:7777/sgc_basic_API << 'EOF'
+          INSERT INTO users (name, email, password, role)
+          VALUES (
             'Admin',
             'admin@example.com',
             '$2a$14$2cg9o6uZK1BLvU7c5MGkuuO92OtbWw7eQvvVJSJzcp5TzT1Upe2T2',
             'admin'
-            )
-            ON CONFLICT (email) DO NOTHING;
-            "
+          )
+          ON CONFLICT (email) DO NOTHING;
+          EOF
 
       - name: Run tests
         run: npm test
