@@ -40,6 +40,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.24"
+          cache-dependency-path: sgc_basic_API/go.sum
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -55,11 +56,19 @@ jobs:
       - name: Apply schema
         run: psql postgresql://postgres:admin@localhost:7777/sgc_basic_API -f schema.sql
 
+      - name: Build API
+        run: go build -o api .
+
       - name: Start API
-        run: go run main.go &
-      
+        run: ./api &
+
       - name: Wait for API
-        run: sleep 15
+        run: |
+          for i in $(seq 1 30); do
+            curl -s http://localhost:8080/ > /dev/null && echo "API is up" && break
+            echo "Waiting... attempt $i"
+            sleep 2
+          done
 
       - name: Create admin user
         run: |
