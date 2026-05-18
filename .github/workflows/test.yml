@@ -72,16 +72,16 @@ jobs:
 
       - name: Create admin user
         run: |
-            psql postgresql://postgres:admin@localhost:7777/sgc_basic_API -c "
-            INSERT INTO users (name, email, password, role)
-            VALUES (
+          psql postgresql://postgres:admin@localhost:7777/sgc_basic_API << 'EOF'
+          INSERT INTO users (name, email, password, role)
+          VALUES (
             'Admin',
             'admin@example.com',
             '$2a$14$2cg9o6uZK1BLvU7c5MGkuuO92OtbWw7eQvvVJSJzcp5TzT1Upe2T2',
             'admin'
-            )
-            ON CONFLICT (email) DO NOTHING;
-            "
+          )
+          ON CONFLICT (email) DO NOTHING;
+          EOF
 
       - name: Run tests
         run: npm test
